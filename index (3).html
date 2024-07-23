@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mineflayer Alt Manager</title>
+    <style>
+        :root {
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0f0f0f;
+            --accent-green: #33ff33;
+            --text-white: #ffffff;
+            --text-gray: #cccccc;
+            --switch-off: #444444;
+            --switch-on: var(--accent-green);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-white);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: var(--darker-bg);
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-tab.active {
+            background-color: var(--accent-green);
+            color: var(--text-white);
+        }
+
+        .content {
+            background-color: var(--darker-bg);
+            border-radius: 0 0 10px 10px;
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--accent-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alt-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .alt-card {
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .alt-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(51, 255, 51, 0.3);
+        }
+
+        .alt-username {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .alt-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .alt-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin: 10px 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--switch-off);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--switch-on);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .chat-box {
+            margin-top: 30px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: var(--darker-bg);
+            border-radius: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            background-color: var(--dark-bg);
+            color: var(--text-white);
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            background-color: var(--accent-green);
+            color: var(--text-white);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .chat-input button:hover {
+            background-color: #66ff66;
+        }
+
+        .add-alt-form {
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-gray);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--darker-bg);
+            color: var(--text-white);
+        }
+
+        .form-group button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-green);
+            color: var(--text-white);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-group button:hover {
+            background-color: #66ff66;
+        }
+
+        .macro-config {
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .macro-config h3 {
+            color: var(--accent-green);
+            margin-bottom: 15px;
+        }
+
+        .macro-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .macro-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            background-color: var(--darker-bg);
+            color: var(--text-white);
+        }
+
+        .macro-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            background-color: var(--accent-green);
+            color: var(--text-white);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .macro-input button:hover {
+            background-color: #66ff66;
+        }
+
+        .alt-selection {
+            margin-top: 20px;
+        }
+
+        .alt-selection label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-gray);
+        }
+
+        .alt-selection div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .alt-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .alt-checkbox input {
+            margin-right: 5px;
+        }
+
+        .alt-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .alt-status .status {
+            color: var(--text-gray);
+        }
+
+        .alt-status button {
+            background: none;
+            border: none;
+            color: var(--text-white);
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .alt-status button:hover {
+            color: var(--accent-green);
+        }
+
+        .edit-menu {
+            display: none;
+            position: absolute;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--accent-green);
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 1000;
+            width: 180px;
+            animation: fadeIn 0.5s ease-in-out;
+            left: 0;
+            transform: translateX(-50%);
+            top: 100%;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-10px) translateX(-50%);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) translateX(-50%);
+            }
+        }
+
+        .edit-menu button {
+            display: block;
+            width: 90%;
+            padding: 10px;
+            margin: 5px auto;
+            background-color: var(--darker-bg);
+            border: none;
+            color: var(--text-white);
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .edit-menu button:hover {
+            background-color: var(--accent-green);
+        }
+
+        .edit-menu button:hover span {
+            color: var(--darker-bg);
+        }
+
+        .notification {
+            background-color: var(--accent-green);
+            color: var(--text-white);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="config">Config</div>
+            <div class="nav-tab" data-tab="manage">Manage Alts</div>
+            <div class="nav-tab" data-tab="alts">Alts</div>
+        </div>
+
+        <div class="content">
+            <div class="page active" id="config">
+                <h2>Alt Configurations</h2>
+                <div class="alt-list" id="alt-list">
+                    <!-- Alt cards will be dynamically added here -->
+                </div>
+
+                <div class="chat-box">
+                    <h3 style="color: var(--accent-green);">Chat</h3>
+                    <select id="alt-select">
+                        <!-- Alt options will be dynamically added here -->
+                    </select>
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Chat messages will appear here -->
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chat-input" placeholder="Type your message...">
+                        <button id="send-chat">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="manage">
+                <h2>Manage Alts</h2>
+                <div class="add-alt-form">
+                    <h3 style="color: var(--accent-green);">Add New Alt</h3>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <button id="add-alt">Add Alt</button>
+                    </div>
+                    <div id="add-alt-notification" class="notification"></div>
+                </div>
+
+                <div class="macro-config">
+                    <h3>Macro Configuration</h3>
+                    <div class="macro-input">
+                        <input type="text" id="macro-command" placeholder="Enter macro command">
+                        <button id="add-macro">Add Macro</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="macro-cooldown">Macro Cooldown (minutes)</label>
+                        <input type="number" id="macro-cooldown" placeholder="Enter cooldown in minutes">
+                    </div>
+                    <div class="alt-selection">
+                        <label>Select Alts for Macro</label>
+                        <div id="macro-alts">
+                            <!-- Alt checkboxes will be dynamically added here -->
+                        </div>
+                    </div>
+                    <div id="add-macro-notification" class="notification"></div>
+                </div>
+            </div>
+
+            <div class="page" id="alts">
+                <h2>Alts</h2>
+                <div id="alts-list">
+                    <!-- Alt statuses will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let existingAlts = new Set();
+        let altPasswords = {};
+
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        document.getElementById('add-alt').addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            socket.emit('add-alt', { username, password });
+            altPasswords[username] = password;
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showNotification('add-alt-notification', `Added ${username} to the server`);
+        });
+
+        document.getElementById('add-macro').addEventListener('click', () => {
+            const command = document.getElementById('macro-command').value;
+            const cooldown = document.getElementById('macro-cooldown').value;
+            const alts = Array.from(document.querySelectorAll('#macro-alts input:checked'))
+                .map(checkbox => checkbox.dataset.username);
+            alts.forEach(username => {
+                socket.emit('add-macro', { username, command, cooldown });
+            });
+            document.getElementById('macro-command').value = '';
+            document.getElementById('macro-cooldown').value = '';
+            showNotification('add-macro-notification', `Added macro to ${alts.length} alt(s)`);
+        });
+
+        document.getElementById('send-chat').addEventListener('click', () => {
+            const message = document.getElementById('chat-input').value;
+            const username = document.getElementById('alt-select').value;
+            socket.emit('send-chat', { username, message });
+            document.getElementById('chat-input').value = '';
+        });
+
+        function showNotification(id, message) {
+            const notification = document.getElementById(id);
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        socket.on('bot-spawned', (username) => {
+            if (existingAlts.has(username)) {
+                updateAltStatus(username, 'online');
+                return;
+            }
+
+            existingAlts.add(username);
+
+            const altList = document.getElementById('alt-list');
+            const altSelect = document.getElementById('alt-select');
+            const macroAlts = document.getElementById('macro-alts');
+            const altsList = document.getElementById('alts-list');
+
+            const altCard = document.createElement('div');
+            altCard.className = 'alt-card';
+            altCard.dataset.username = username;
+            altCard.innerHTML = `
+                <div class="alt-username">${username}</div>
+                <div class="alt-actions">
+                    <div class="alt-action">
+                        <span>Jump</span>
+                        <label class="switch">
+                            <input type="checkbox" class="jump-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="alt-action">
+                        <span>Sneak</span>
+                        <label class="switch">
+                            <input type="checkbox" class="sneak-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="alt-action">
+                        <span>Auto Feed</span>
+                        <label class="switch">
+                            <input type="checkbox" class="auto-feed-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="alt-action">
+                        <span>Auto Reconnect</span>
+                        <label class="switch">
+                            <input type="checkbox" class="auto-reconnect-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            `;
+            altList.appendChild(altCard);
+
+            const option = document.createElement('option');
+            option.value = username;
+            option.textContent = username;
+            altSelect.appendChild(option);
+
+            const macroAltCheckbox = document.createElement('label');
+            macroAltCheckbox.className = 'alt-checkbox';
+            macroAltCheckbox.innerHTML = `
+                <input type="checkbox" data-username="${username}">
+                ${username}
+            `;
+            macroAlts.appendChild(macroAltCheckbox);
+
+            const altStatus = document.createElement('div');
+            altStatus.className = 'alt-status';
+            altStatus.dataset.username = username;
+            altStatus.innerHTML = `
+                <span>${username}</span>
+                <span class="status">Status: <span style="color: var(--accent-green);">online</span></span>
+                <button class="remove-alt" style="color: var(--text-white);">x</button>
+                <button class="edit-alt" style="color: var(--text-white);">✎</button>
+                <div class="edit-menu">
+                    <button class="remove-macros"><span>Remove All Macros</span></button>
+                    <button class="stop-alt"><span>Stop Alt</span></button>
+                    <button class="start-alt"><span>Start Alt</span></button>
+                    <button class="reconnect-alt"><span>Reconnect Alt</span></button>
+                </div>
+            `;
+            altsList.appendChild(altStatus);
+
+            // Add login message to chat
+            const chatMessages = document.getElementById('chat-messages');
+            const loginMessage = document.createElement('div');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateString = now.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            loginMessage.innerHTML = `<span style="color: var(--accent-green);">[${timeString} ${dateString}]</span> ${username} logged in`;
+            chatMessages.appendChild(loginMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            altCard.querySelector('.jump-toggle').addEventListener('change', (event) => {
+                socket.emit('toggle-action', { username, action: 'jump', state: event.target.checked });
+            });
+
+            altCard.querySelector('.sneak-toggle').addEventListener('change', (event) => {
+                socket.emit('toggle-action', { username, action: 'sneak', state: event.target.checked });
+            });
+
+            altCard.querySelector('.auto-feed-toggle').addEventListener('change', (event) => {
+                socket.emit('toggle-action', { username, action: 'auto-feed', state: event.target.checked });
+            });
+
+            altCard.querySelector('.auto-reconnect-toggle').addEventListener('change', (event) => {
+                socket.emit('toggle-action', { username, action: 'auto-reconnect', state: event.target.checked });
+            });
+
+            altStatus.querySelector('.remove-alt').addEventListener('click', () => {
+                socket.emit('remove-alt', username);
+            });
+
+            altStatus.querySelector('.edit-alt').addEventListener('click', (event) => {
+                const editMenu = event.target.nextElementSibling;
+                const rect = event.target.getBoundingClientRect();
+                const parentRect = event.target.closest('.alt-status').getBoundingClientRect();
+
+                if (editMenu.style.display === 'block') {
+                    editMenu.style.opacity = '0';
+                    setTimeout(() => {
+                        editMenu.style.display = 'none';
+                    }, 500); // Match this with the animation duration
+                } else {
+                    editMenu.style.display = 'block';
+                    editMenu.style.opacity = '0';
+                    const leftPosition = rect.left - parentRect.left + rect.width / 2;
+                    editMenu.style.left = `${leftPosition}px`;
+                    editMenu.style.top = `${rect.height}px`;
+                    setTimeout(() => {
+                        editMenu.style.opacity = '1';
+                    }, 10);
+                }
+
+                event.stopPropagation();
+            });
+
+            altStatus.querySelector('.remove-macros').addEventListener('click', () => {
+                socket.emit('remove-macros', username);
+            });
+
+            altStatus.querySelector('.stop-alt').addEventListener('click', () => {
+                if (altStatus.querySelector('.status span').style.color === 'var(--accent-green)') {
+                    socket.emit('stop-alt', username);
+                }
+            });
+
+            altStatus.querySelector('.start-alt').addEventListener('click', () => {
+                if (altStatus.querySelector('.status span').style.color !== 'var(--accent-green)') {
+                    socket.emit('start-alt', { username, password: altPasswords[username] });
+                }
+            });
+
+            altStatus.querySelector('.reconnect-alt').addEventListener('click', () => {
+                socket.emit('reconnect-alt', { username, password: altPasswords[username] });
+            });
+            });
+
+            socket.on('bot-kicked', ({ username, reason }) => {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateString = now.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            messageElement.innerHTML = `<span style="color: var(--accent-green);">[${timeString} ${dateString}]</span> ${username} was kicked: ${reason}`;
+            chatMessages.appendChild(messageElement);
+            updateAltStatus(username, 'offline');
+            });
+
+            socket.on('bot-disconnected', (username) => {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateString = now.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            messageElement.innerHTML = `<span style="color: var(--accent-green);">[${timeString} ${dateString}]</span> ${username} disconnected`;
+            chatMessages.appendChild(messageElement);
+            updateAltStatus(username, 'offline');
+            });
+
+            socket.on('bot-error', ({ username, error }) => {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateString = now.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            messageElement.innerHTML = `<span style="color: var(--accent-green);">[${timeString} ${dateString}]</span> ${username} error: ${error}`;
+            chatMessages.appendChild(messageElement);
+            updateAltStatus(username, 'offline');
+            });
+
+            socket.on('remove-alt', (username) => {
+            const altCard = document.querySelector(`.alt-card[data-username="${username}"]`);
+            const altStatus = document.querySelector(`.alt-status[data-username="${username}"]`);
+            const altOption = document.querySelector(`#alt-select option[value="${username}"]`);
+            const macroAltCheckbox = document.querySelector(`.alt-checkbox input[data-username="${username}"]`).parentNode;
+
+            if (altCard) altCard.remove();
+            if (altStatus) altStatus.remove();
+            if (altOption) altOption.remove();
+            if (macroAltCheckbox) macroAltCheckbox.remove();
+
+            existingAlts.delete(username);
+            delete altPasswords[username];
+            });
+
+            socket.on('bot-stopped', (username) => {
+            updateAltStatus(username, 'offline');
+            });
+
+            socket.on('chat-message', ({ username, message }) => {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateString = now.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            messageElement.innerHTML = `<span style="color: var(--accent-green);">[${timeString} ${dateString}]</span> ${username}: ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+
+            function updateAltStatus(username, status) {
+            const altStatus = document.querySelector(`.alt-status[data-username="${username}"] .status`);
+            if (altStatus) {
+                const statusColor = status === 'online' ? 'var(--accent-green)' : 'var(--text-gray)';
+                altStatus.innerHTML = `Status: <span style="color: ${statusColor};">${status}</span>`;
+            }
+            }
+
+            document.addEventListener('click', (event) => {
+            if (!event.target.matches('.edit-alt')) {
+                const editMenus = document.querySelectorAll('.edit-menu');
+                editMenus.forEach(menu => {
+                    menu.style.opacity = '0';
+                    setTimeout(() => {
+                        menu.style.display = 'none';
+                    }, 500);
+                });
+            }
+            });
+            </script>
+            </body>
+            </html>
